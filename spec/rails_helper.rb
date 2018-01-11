@@ -79,3 +79,7 @@ RSpec.configure do |config|
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
 end
+
+def make_post_request(route:, headers: nil, body: nil)
+  post route, params: body, headers: headers
+end
