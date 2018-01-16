@@ -17,7 +17,7 @@ class ResponsesController < JsonApiController
           'type': 'array',
           'items': {'$ref': '#/definitions/response'},
           'minItems': 0,
-          'maxItems': 100,
+          'maxItems': 50,
         },
       },
       'required': ['responses'],
