@@ -29,11 +29,11 @@ ActiveRecord::Schema.define(version: 20180111161500) do
   end
 
   create_table "course_events", force: :cascade do |t|
+    t.uuid "event_uuid", null: false
+    t.string "event_type", null: false
     t.uuid "course_uuid", null: false
     t.integer "course_seqnum", null: false
-    t.string "event_type", null: false
-    t.uuid "event_uuid", null: false
-    t.datetime "event_time", null: false
+    t.jsonb "data", null: false
     t.boolean "has_been_processed", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

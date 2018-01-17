@@ -1,12 +1,11 @@
 class CreateCourseEvents < ActiveRecord::Migration[5.1]
   def change
     create_table :course_events do |t|
-      t.uuid      :course_uuid,     null: false
-      t.integer   :course_seqnum,   null: false
-      t.string    :event_type,      null: false
-      t.uuid      :event_uuid,      null: false
-      t.datetime  :event_time,      null: false
-
+      t.uuid      :event_uuid,         null: false
+      t.string    :event_type,         null: false
+      t.uuid      :course_uuid,        null: false
+      t.integer   :course_seqnum,      null: false
+      t.jsonb     :data,               null: false
       t.boolean   :has_been_processed, null: false
 
       t.timestamps null: false

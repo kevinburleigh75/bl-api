@@ -4,14 +4,15 @@ class Services::RecordResponses::Service #< Services::ApplicationService
     ## Extract the Response attributes and convert them to CourseEvents.
     ##
 
-    recorded_response_uuids = responses.uniq{|response| response.fetch(:response_uuid)}
+    recorded_response_uuids = responses.map{|response| response.fetch(:response_uuid)}.uniq
 
     course_events = responses.map{ |response|
       CourseEvent.new(
-        uuid:            response.fetch(:response_uuid),
-        type:            :record_response,
-        course_uuid:     response.fetch(:course_uuid),
-        sequence_number: response.fetch(:sequence_number),
+        event_uuid:         response.fetch(:response_uuid),
+        event_type:         :record_response,
+        course_uuid:        response.fetch(:course_uuid),
+        course_seqnum:      response.fetch(:sequence_number),
+        has_been_processed: false,
         data: response.slice(
           :response_uuid,
           :course_uuid,
@@ -43,53 +44,55 @@ class Services::RecordResponses::Service #< Services::ApplicationService
     }
 
     ##
-    ## Record the responses and update the associated CourseEventIndicators
-    ## (if needed).
+    ## If there are responses to process, record them and update
+    ## the associated CourseEventIndicators (if needed).
     ##
 
-    CourseEvent.transaction(isolation_level: :read_committed) do
-      ##
-      ## Import the new CourseEvents, ignoring any that might
-      ## already be present (idempotency).
-      ##
+    if course_events.any?
+      CourseEvent.transaction(isolation: :read_committed) do
+        ##
+        ## Import the new CourseEvents, ignoring any that might
+        ## already be present (idempotency).
+        ##
 
-      CourseEvent.import course_events on_duplicate_key_ignore: true;
+        CourseEvent.import course_events, on_duplicate_key_ignore: true;
 
-      ##
-      ## Find and lock the associated course states.
-      ##
+        ##
+        ## Find and lock the associated course states.
+        ##
 
-      sql_find_and_lock_course_event_indicators = %Q{
-        SELECT * FROM course_event_indicators
-        WHERE course_uuid IN ( #{course_uuid_values} )
-        ORDER BY course_uuid ASC
-        FOR UPDATE
-      }.gsub(/\n\s*/, ' ')
+        sql_find_and_lock_course_event_indicators = %Q{
+          SELECT * FROM course_event_indicators
+          WHERE course_uuid IN ( #{course_uuid_values} )
+          ORDER BY course_uuid ASC
+          FOR UPDATE
+        }.gsub(/\n\s*/, ' ')
 
-      course_event_indicators = CourseEventIndicator.find_by_sql(sql_find_and_lock_course_event_indicators)
+        course_event_indicators = CourseEventIndicator.find_by_sql(sql_find_and_lock_course_event_indicators)
 
-      ##
-      ## Update and save the course event indicators.
-      ##
-      ## We only need to update needs_attention for a particular course
-      ## if this batch of CourseEvents contains the next unprocessed
-      ## sequence number for that course.  Otherwise just leave it alone.
-      ##
+        ##
+        ## Update and save the course event indicators.
+        ##
+        ## We only need to update needs_attention for a particular course
+        ## if this batch of CourseEvents contains the next unprocessed
+        ## sequence number for that course.  Otherwise just leave it alone.
+        ##
 
-      indicators_to_update = course_event_indicators.select{ |indicator|
-        seqnums_by_course_uuid[indicator.course_uuid].has_key?(1 + indicator.last_course_seqnum)
-      }.each{ |indicator|
-        indicator.needs_attention = true
-        indicator.waiting_since   = Time.now
-      }
-
-      CourseEventIndicator.import(
-        indicators_to_update,
-        on_duplicate_key_update: {
-          conflict_target: [:course_uuid],
-          columns: CourseEventIndicator.column_names - ['updated_at', 'created_at']
+        indicators_to_update = course_event_indicators.select{ |indicator|
+          seqnums_by_course_uuid[indicator.course_uuid].has_key?(1 + indicator.last_course_seqnum)
+        }.each{ |indicator|
+          indicator.needs_attention = true
+          indicator.waiting_since   = Time.now
         }
-      )
+
+        CourseEventIndicator.import(
+          indicators_to_update,
+          on_duplicate_key_update: {
+            conflict_target: [:course_uuid],
+            columns: CourseEventIndicator.column_names - ['updated_at', 'created_at']
+          }
+        )
+      end
     end
 
     ##
