@@ -35,7 +35,7 @@ RSpec.describe ResponsesController, type: :request do
         {
           response_uuid:    SecureRandom.uuid,
           course_uuid:      SecureRandom.uuid,
-          sequence_number:  rand(10),
+          sequence_number:  Kernel.rand(10),
           ecosystem_uuid:   SecureRandom.uuid,
           trial_uuid:       SecureRandom.uuid,
           student_uuid:     SecureRandom.uuid,

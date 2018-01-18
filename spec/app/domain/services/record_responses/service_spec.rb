@@ -1,129 +1,109 @@
 require 'rails_helper'
 
+RSpec::Matchers.define :the_same_records_as do |expected|
+  match do |actual|
+    ## same keys
+    result = expected.keys.sort == actual.keys.sort
+    break result unless result
+
+    ## for each key
+    result = expected.keys.each do |key|
+      ## same number of values
+      expected_records = expected[key]
+      actual_records   = actual[key]
+      break false if expected_records.count != actual_records.count
+
+      ## same values (order doesn't matter)
+      result = expected_records.each do |expected_record|
+        break false unless actual_records.detect{|actual_record| actual_record.attributes == expected_record.attributes}
+        true
+      end
+      break result unless result
+    end
+    result
+  end
+end
+
 RSpec.describe Services::RecordResponses::Service do
   let(:service) { described_class.new }
 
-  let(:action)  { service.process(responses: given_responses) }
+  let(:action)  { service.process(responses: given_response_data, other: process_payload) }
+
+  let(:given_course_events) {
+    given_response_data.map{ |response_data|
+      CourseEvent.new(
+        event_uuid:         response_data.fetch(:response_uuid),
+        event_type:         CourseEvent.event_type.record_response,
+        course_uuid:        response_data.fetch(:course_uuid),
+        course_seqnum:      response_data.fetch(:sequence_number),
+        has_been_processed: false,
+        data: response_data.slice(
+          :response_uuid,
+          :course_uuid,
+          :sequence_number,
+          :ecosystem_uuid,
+          :trial_uuid,
+          :student_uuid,
+          :exercise_uuid,
+          :is_correct,
+          :is_real_response,
+          :responded_at,
+        ),
+      )
+    }
+  }
+
+  let(:process_payload) { {course_events: given_course_events} }
+  let(:process_result)  { given_course_events.map{|event| event.event_uuid} }
+
+  let(:service_double) {
+    object_double(Services::RecordCourseEvents::Service.new).tap do |dbl|
+      allow(dbl).to receive(:process).and_return(process_result)
+    end
+  }
+
+  before(:each) do
+    allow(Services::RecordCourseEvents::Service).to receive(:new).and_return(service_double)
+  end
 
   context "when no response data is given" do
-    let(:given_responses) { [] }
+    let(:given_response_data) { [] }
 
-    it "no CourseEvents are created" do
-      expect{action}.to_not change{CourseEvent.count}
+    it "the RecordCourseEvents service is called with the correct CourseEvents" do
+      action
+      expect(service_double).to have_received(:process).with(the_same_records_as(process_payload))
     end
 
-    it "an empty uuid array is returned" do
-      expect(action.fetch(:recorded_response_uuids)).to be_empty
+    it "the RecordCourseEvents service is called with the correct CourseEvents" do
+      expect(action.fetch(:recorded_response_uuids)).to match_array(process_result)
     end
   end
 
   context "when response data is given" do
-    let(:given_response_data) do
-      4.times.map do
+    let(:given_response_data) {
+      1.times.map{
         {
-          response_uuid:    SecureRandom.uuid,
-          course_uuid:      SecureRandom.uuid,
-          sequence_number:  rand(1000),
-          ecosystem_uuid:   SecureRandom.uuid,
-          trial_uuid:       SecureRandom.uuid,
-          student_uuid:     SecureRandom.uuid,
-          exercise_uuid:    SecureRandom.uuid,
+          response_uuid:    SecureRandom.uuid.to_s,
+          course_uuid:      SecureRandom.uuid.to_s,
+          sequence_number:  Kernel.rand(1000),
+          ecosystem_uuid:   SecureRandom.uuid.to_s,
+          trial_uuid:       SecureRandom.uuid.to_s,
+          student_uuid:     SecureRandom.uuid.to_s,
+          exercise_uuid:    SecureRandom.uuid.to_s,
           is_correct:       [ true, false ].sample,
           is_real_response: [ true, false ].sample,
-          responded_at:     Time.current.iso8601(6)
+          responded_at:     Time.current.iso8601(6),
         }
-      end
-    end
-
-    let(:existing_response_data) { given_response_data.values_at(0, 2) }
-    let(:new_response_data)      { given_response_data.values_at(1, 3) }
-
-    let(:given_responses)        { given_response_data * 2 }
-
-    let!(:existing_responses) {
-      existing_response_data.map do |response_data|
-        FactoryBot.create(:course_event,
-          event_uuid:         response_data.fetch(:response_uuid),
-          event_type:         :record_response,
-          course_uuid:        response_data.fetch(:course_uuid),
-          course_seqnum:      response_data.fetch(:sequence_number),
-          has_been_processed: [true, false].sample,
-          data: response_data.slice(
-            :response_uuid,
-            :sequence_number,
-            :ecosystem_uuid,
-            :trial_uuid,
-            :student_uuid,
-            :exercise_uuid,
-            :is_correct,
-            :is_real_response,
-            :responded_at,
-          )
-        )
-      end
+      }
     }
 
-    it "CourseEvents are created for only previously-unseen response data" do
-      expect{action}.to change{CourseEvent.count}.by(new_response_data.size)
-
-      target_response_uuids = new_response_data.map { |data| data.fetch(:response_uuid) }
-      newly_created_responses = CourseEvent.where(event_uuid: target_response_uuids)
-      expect(newly_created_responses.size).to eq(new_response_data.size)
+    it "the RecordCourseEvents service is called with the correct CourseEvents" do
+      action
+      expect(service_double).to have_received(:process).with(the_same_records_as(process_payload))
     end
 
-    it "CourseEvents for previously-seen response data are left unchanged" do
-      target_response_uuids = existing_response_data.map { |data| data.fetch(:response_uuid) }
-      expect(existing_responses.size).to eq(existing_response_data.size)
-      target_updated_ats = existing_responses.map { |response| response.reload.updated_at }
-
-      expect{action}.to change{CourseEvent.count}.by(new_response_data.size)
-
-      existing_responses.each do |response|
-        response.reload
-
-        expect(target_response_uuids).to include response.event_uuid
-        expect(target_updated_ats).to include response.updated_at
-      end
-    end
-
-    it "all unique given response_uuids are returned (idempotence)" do
-      target_uuids = given_response_data.map { |data| data.fetch(:response_uuid) }.uniq
-      expect(action.fetch(:recorded_response_uuids)).to match_array(target_uuids)
-    end
-
-    it 'the newly-created CourseEvent records have the correct parameters' do
-      expect{action}.to change{CourseEvent.count}.by(new_response_data.size)
-
-      new_response_uuids = new_response_data.map { |data| data.fetch(:response_uuid) }
-      newly_created_responses = CourseEvent.where(event_uuid: new_response_uuids)
-
-      given_response_data_by_response_uuid = given_response_data.index_by do |response|
-        response.fetch(:response_uuid)
-      end
-
-      newly_created_responses.each do |newly_created_response|
-        given_response_data = given_response_data_by_response_uuid[newly_created_response.event_uuid]
-
-        aggregate_failures 'record_response data checks' do
-          expect(newly_created_response.event_uuid).to eq(given_response_data.fetch(:response_uuid))
-          expect(newly_created_response.course_uuid).to eq(given_response_data.fetch(:course_uuid))
-          expect(newly_created_response.course_seqnum).to(
-            eq(given_response_data.fetch(:sequence_number))
-          )
-
-          data = newly_created_response.data.deep_symbolize_keys
-          expect(data.fetch(:ecosystem_uuid)).to eq(given_response_data.fetch(:ecosystem_uuid))
-          expect(data.fetch(:trial_uuid)).to eq(given_response_data.fetch(:trial_uuid))
-          expect(data.fetch(:student_uuid)).to eq(given_response_data.fetch(:student_uuid))
-          expect(data.fetch(:exercise_uuid)).to eq(given_response_data.fetch(:exercise_uuid))
-          expect(data.fetch(:is_correct)).to eq(given_response_data.fetch(:is_correct))
-          expect(data.fetch(:is_real_response)).to eq(given_response_data.fetch(:is_real_response))
-          expect(data.fetch(:responded_at)).to eq(given_response_data.fetch(:responded_at))
-          expect(DateTime.parse(data.fetch(:responded_at))).to(
-            be_within(1e-6).of(DateTime.parse(given_response_data.fetch(:responded_at)))
-          )
-        end
-      end
+    it "the uuids returned from the RecordCourseEvents service are properly returned" do
+      expect(action.fetch(:recorded_response_uuids)).to match_array(process_result)
     end
   end
 end
