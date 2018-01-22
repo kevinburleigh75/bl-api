@@ -27,7 +27,7 @@ end
 RSpec.describe Services::RecordResponses::Service do
   let(:service) { described_class.new }
 
-  let(:action)  { service.process(responses: given_response_data, other: process_payload) }
+  let(:action)  { service.process(responses: given_response_data) }
 
   let(:given_course_events) {
     given_response_data.map{ |response_data|

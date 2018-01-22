@@ -1,5 +1,5 @@
 class Services::RecordResponses::Service #< Services::ApplicationService
-  def process(responses:, other:)
+  def process(responses:)
     ##
     ## Convert the response attributes to CourseEvents.
     ##
