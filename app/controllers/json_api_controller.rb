@@ -117,7 +117,10 @@ class JsonApiController < ApplicationController
         body:    response.body
       }
     }
-    render json: payload, status: 500
+    ## We can't call render here because it was already called,
+    ## so just update the response status/body directly.
+    response.status = 500
+    response.body   = payload.to_json
   end
 
   module SchemaDefinitions
