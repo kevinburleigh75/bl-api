@@ -1,4 +1,4 @@
-class Services::RecordResponses::Service #< Services::ApplicationService
+class Services::RecordResponses::Service
   def process(responses:)
     ##
     ## Convert the response attributes to CourseEvents.
