@@ -1,19 +1,17 @@
 class External::CoursesController < JsonApiController
 
   def create
-    respond_with_json_apis_and_service(
-      input_schema:  _create_request_payload_schema,
-      output_schema: _create_response_payload_schema,
-      service:       Services::CreateCourse::Service.new
-    )
+    with_json_apis(input_schema:  _create_request_payload_schema,
+                   output_schema: _create_response_payload_schema) do |request_payload|
+      Services::CreateCourse::Service.new.process(course_info: request_payload)
+    end
   end
 
   def update_active_dates
-    respond_with_json_apis_and_service(
-      input_schema:  _update_active_dates_request_payload_schema,
-      output_schema: _update_active_dates_response_payload_schema,
-      service:       Services::UpdateCourseActiveDates::Service.new
-    )
+    with_json_apis(input_schema:  _update_active_dates_request_payload_schema,
+                   output_schema: _update_active_dates_response_payload_schema) do |request_payload|
+      Services::UpdateCourseActiveDates::Service.new.process(course_info: request_payload)
+    end
   end
 
   protected

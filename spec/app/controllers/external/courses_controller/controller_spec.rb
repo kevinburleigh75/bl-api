@@ -15,7 +15,7 @@ RSpec.describe External::CoursesController, type: :request do
 
     let(:request_payload) { given_course_info }
 
-    let(:process_payload) { given_course_info }
+    let(:process_payload) { {course_info: given_course_info} }
 
     let(:process_result) { {created_course_uuid: given_course_info[:course_uuid]} }
 
@@ -68,7 +68,7 @@ RSpec.describe External::CoursesController, type: :request do
 
     let(:request_payload) { given_course_info }
 
-    let(:process_payload) { given_course_info }
+    let(:process_payload) { {course_info: given_course_info} }
 
     let(:process_result) { {updated_course_uuid: given_course_info[:course_uuid]} }
 
