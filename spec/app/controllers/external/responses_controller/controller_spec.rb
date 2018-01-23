@@ -2,34 +2,6 @@ require 'rails_helper'
 
 RSpec.describe External::ResponsesController, type: :request do
   context 'basic functionality' do
-    # let(:given_response_uuid)    { SecureRandom.uuid       }
-    # let(:given_course_uuid)      { SecureRandom.uuid       }
-    # let(:given_sequence_number)  { rand(10)                }
-    # let(:given_ecosystem_uuid)   { SecureRandom.uuid       }
-    # let(:given_trial_uuid)       { SecureRandom.uuid       }
-    # let(:given_student_uuid)     { SecureRandom.uuid       }
-    # let(:given_exercise_uuid)    { SecureRandom.uuid       }
-    # let(:given_is_correct)       { [ true, false ].sample  }
-    # let(:given_is_real_response) { [ true, false ].sample  }
-    # let(:given_responded_at)     { Time.current.iso8601(6) }
-
-    # let(:given_responses) {
-    #   [
-    #     {
-    #       response_uuid:    given_response_uuid,
-    #       course_uuid:      given_course_uuid,
-    #       sequence_number:  given_sequence_number,
-    #       ecosystem_uuid:   given_ecosystem_uuid,
-    #       trial_uuid:       given_trial_uuid,
-    #       student_uuid:     given_student_uuid,
-    #       exercise_uuid:    given_exercise_uuid,
-    #       is_correct:       given_is_correct,
-    #       is_real_response: given_is_real_response,
-    #       responded_at:     given_responded_at
-    #     }
-    #   ]
-    # }
-
     let(:given_responses) {
       1.times.map {
         {
@@ -51,7 +23,7 @@ RSpec.describe External::ResponsesController, type: :request do
 
     let(:process_payload) { {responses: given_responses} }
 
-    let(:target_result) {
+    let(:process_result) {
       {
         recorded_response_uuids: given_responses.map { |response|
           response.fetch(:response_uuid)
@@ -59,11 +31,11 @@ RSpec.describe External::ResponsesController, type: :request do
       }
     }
 
-    let(:target_response) { target_result }
+    let(:target_response) { process_result }
 
     let(:service_double) {
       object_double(Services::RecordResponses::Service.new).tap do |dbl|
-        allow(dbl).to receive(:process).with(process_payload).and_return(target_result)
+        allow(dbl).to receive(:process).with(process_payload).and_return(process_result)
       end
     }
 
@@ -98,9 +70,9 @@ RSpec.describe External::ResponsesController, type: :request do
 
   def record_responses(request_payload:)
     make_post_request(
-      route: '/record_responses',
+      route:   '/record_responses',
       headers: { 'Content-Type' => 'application/json' },
-      body:  request_payload.to_json
+      body:    request_payload.to_json
     )
     response_status  = response.status
     response_payload = JSON.parse(response.body)
