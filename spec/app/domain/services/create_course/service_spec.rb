@@ -1,29 +1,5 @@
 require 'rails_helper'
 
-RSpec::Matchers.define :the_same_records_as do |expected|
-  match do |actual|
-    ## same keys
-    result = expected.keys.sort == actual.keys.sort
-    break result unless result
-
-    ## for each key
-    result = expected.keys.each do |key|
-      ## same number of values
-      expected_records = expected[key]
-      actual_records   = actual[key]
-      break false if expected_records.count != actual_records.count
-
-      ## same values (order doesn't matter)
-      result = Array(expected_records).each do |expected_record|
-        break false unless Array(actual_records).detect{|actual_record| actual_record.attributes == expected_record.attributes}
-        true
-      end
-      break result unless result
-    end
-    result
-  end
-end
-
 RSpec.describe Services::CreateCourse::Service do
   let(:service) { described_class.new }
 

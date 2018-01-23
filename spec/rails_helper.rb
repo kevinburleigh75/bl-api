@@ -95,6 +95,43 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 end
 
+##
+## Convenience function to make parameters explicit
+## and their ordering irrelavent.
+##
 def make_post_request(route:, headers: nil, body: nil)
   post route, params: body, headers: headers
+end
+
+##
+## Compares hashes with arbitrary keys whose values
+## are ActiveRecord objects (whose default == operator
+## does not support normal equality semantics).
+##
+
+RSpec::Matchers.define :the_same_records_as do |expected|
+  match do |actual|
+    ## same keys
+    result = expected.keys.sort == actual.keys.sort
+    break result unless result
+
+    result = expected.keys.each do |key|
+      expected_records = expected[key]
+      actual_records   = actual[key]
+
+      ## same type of values
+      break false if expected_records.is_a?(Array) != actual_records.is_a?(Array)
+
+      ## same number of values
+      break false if Array(expected_records).count != Array(actual_records).count
+
+      ## same values (order doesn't matter)
+      result = Array(expected_records).each do |expected_record|
+        break false unless Array(actual_records).detect{|actual_record| actual_record.attributes == expected_record.attributes}
+        true
+      end
+      break result unless result
+    end
+    result
+  end
 end
