@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe ResponsesController, type: :request do
+RSpec.describe External::ResponsesController, type: :request do
   context 'basic functionality' do
     # let(:given_response_uuid)    { SecureRandom.uuid       }
     # let(:given_course_uuid)      { SecureRandom.uuid       }

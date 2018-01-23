@@ -1,4 +1,4 @@
-class ResponsesController < JsonApiController
+class External::ResponsesController < JsonApiController
 
   def record
     respond_with_json_apis_and_service(
