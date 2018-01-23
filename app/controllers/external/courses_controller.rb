@@ -8,13 +8,13 @@ class External::CoursesController < JsonApiController
     )
   end
 
-  # def update_active_dates
-  #   respond_with_json_apis_and_service(
-  #     input_schema:  _update_active_dates_request_payload_schema,
-  #     output_schema: _update_active_dates_response_payload_schema,
-  #     service:       Services::UpdateCourseActiveDates::Service.new
-  #   )
-  # end
+  def update_active_dates
+    respond_with_json_apis_and_service(
+      input_schema:  _update_active_dates_request_payload_schema,
+      output_schema: _update_active_dates_response_payload_schema,
+      service:       Services::UpdateCourseActiveDates::Service.new
+    )
+  end
 
   protected
 
