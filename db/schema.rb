@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180111161500) do
+ActiveRecord::Schema.define(version: 20180124224052) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "citext"
 
   create_table "course_event_indicators", force: :cascade do |t|
     t.uuid "course_uuid", null: false
@@ -44,6 +45,19 @@ ActiveRecord::Schema.define(version: 20180111161500) do
     t.index ["event_uuid"], name: "index_course_events_on_event_uuid", unique: true
     t.index ["has_been_processed", "course_uuid", "course_seqnum"], name: "index_ces_on_hbp_cu_csn"
     t.index ["has_been_processed"], name: "index_course_events_on_has_been_processed"
+  end
+
+  create_table "student_clues", force: :cascade do |t|
+    t.uuid "student_clue_uuid", null: false
+    t.uuid "student_uuid", null: false
+    t.uuid "book_container_uuid", null: false
+    t.citext "algorithm_name", null: false
+    t.jsonb "data", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_container_uuid"], name: "index_student_clues_on_book_container_uuid", unique: true
+    t.index ["student_clue_uuid"], name: "index_student_clues_on_student_clue_uuid", unique: true
+    t.index ["student_uuid", "book_container_uuid", "algorithm_name"], name: "index_scs_on_su_bcu_an", unique: true
   end
 
 end
