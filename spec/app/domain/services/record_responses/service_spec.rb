@@ -50,7 +50,7 @@ RSpec.describe Services::RecordResponses::Service do
       expect(service_double).to have_received(:process).with(the_same_records_as(process_payload))
     end
 
-    it "the RecordCourseEvents service is called with the correct CourseEvents" do
+    it "the returned uuid array is empty" do
       expect(action.fetch(:recorded_response_uuids)).to match_array(process_result)
     end
   end
