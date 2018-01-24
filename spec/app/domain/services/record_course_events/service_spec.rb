@@ -121,7 +121,7 @@ RSpec.describe Services::RecordCourseEvents::Service do
       expect(newly_created_indicator_course_uuids).to match_array(target_course_uuids)
     end
 
-    it "missing CourseEventIndicators for courses that now attention have correct parameters" do
+    it "missing CourseEventIndicators for courses that now need attention have correct parameters" do
       action_time = Time.current
 
       action
@@ -146,7 +146,7 @@ RSpec.describe Services::RecordCourseEvents::Service do
       expect(new_indicators).to all(have_attributes(last_course_seqnum: -1))
     end
 
-    it "updates CourseEventIndicators for courses that did not need attention and received in-sequence events" do
+    it "CourseEventIndicators for courses that did not need attention and received in-sequence events are updated" do
       action_time = Time.current
 
       action
@@ -161,7 +161,7 @@ RSpec.describe Services::RecordCourseEvents::Service do
       end
     end
 
-    it "does not update CourseEventIndicators for courses that already needed attention" do
+    it "CourseEventIndicators for courses that already needed attention are not updated" do
       action_time = Time.current
 
       action
@@ -172,7 +172,7 @@ RSpec.describe Services::RecordCourseEvents::Service do
       expect(updated_indicators.count).to eq(0)
     end
 
-    it "does not update CourseEventIndicators for courses that did not need attention and received out-of-sequence events" do
+    it "CourseEventIndicators for courses that did not need attention and received out-of-sequence events are not updated" do
       action_time = Time.current
 
       action
