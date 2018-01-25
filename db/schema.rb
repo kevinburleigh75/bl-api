@@ -10,11 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180125195119) do
+ActiveRecord::Schema.define(version: 20180125203549) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "citext"
+
+  create_table "book_containers", force: :cascade do |t|
+    t.uuid "container_uuid", null: false
+    t.uuid "ecosystem_uuid", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["container_uuid"], name: "index_book_containers_on_container_uuid", unique: true
+    t.index ["ecosystem_uuid"], name: "index_book_containers_on_ecosystem_uuid"
+  end
 
   create_table "course_event_indicators", force: :cascade do |t|
     t.uuid "course_uuid", null: false

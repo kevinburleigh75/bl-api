@@ -24,3 +24,6 @@
 
 # Ignore RSpec timing data
 /spec/examples.txt
+
+# Ignore endpoint notes file
+endpoints.txt
