@@ -5,12 +5,12 @@ class Services::CreateCourse::Service
     ##
 
     course_event = CourseEvent.new(
-      event_uuid:         course_info.fetch(:course_uuid),
-      event_type:         CourseEvent.event_type.create_course,
-      course_uuid:        course_info.fetch(:course_uuid),
-      course_seqnum:      0,
-      has_been_processed: false,
-      data: course_info.slice(
+      event_uuid:             course_info.fetch(:course_uuid),
+      event_type:             CourseEvent.event_type.create_course,
+      event_has_been_bundled: false,
+      course_uuid:            course_info.fetch(:course_uuid),
+      course_seqnum:          0,
+      event_data: course_info.slice(
         :course_uuid,
         :sequence_number,
         :ecosystem_uuid,

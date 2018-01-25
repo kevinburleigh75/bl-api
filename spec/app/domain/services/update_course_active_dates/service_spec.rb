@@ -18,12 +18,12 @@ RSpec.describe Services::UpdateCourseActiveDates::Service do
 
   let(:given_course_event) {
     CourseEvent.new(
-      event_uuid:         given_course_info.fetch(:request_uuid),
-      event_type:         CourseEvent.event_type.update_course_active_dates,
-      course_uuid:        given_course_info.fetch(:course_uuid),
-      course_seqnum:      given_course_info.fetch(:sequence_number),
-      has_been_processed: false,
-      data: given_course_info.slice(
+      event_uuid:             given_course_info.fetch(:request_uuid),
+      event_type:             CourseEvent.event_type.update_course_active_dates,
+      course_uuid:            given_course_info.fetch(:course_uuid),
+      course_seqnum:          given_course_info.fetch(:sequence_number),
+      event_has_been_bundled: false,
+      event_data: given_course_info.slice(
         :request_uuid,
         :course_uuid,
         :sequence_number,

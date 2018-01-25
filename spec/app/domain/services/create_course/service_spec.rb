@@ -18,12 +18,12 @@ RSpec.describe Services::CreateCourse::Service do
 
   let(:given_course_event) {
     CourseEvent.new(
-      event_uuid:         given_course_info.fetch(:course_uuid),
-      event_type:         CourseEvent.event_type.create_course,
-      course_uuid:        given_course_info.fetch(:course_uuid),
-      course_seqnum:      0,
-      has_been_processed: false,
-      data: given_course_info.slice(
+      event_uuid:             given_course_info.fetch(:course_uuid),
+      event_type:             CourseEvent.event_type.create_course,
+      course_uuid:            given_course_info.fetch(:course_uuid),
+      course_seqnum:          0,
+      event_has_been_bundled: false,
+      event_data: given_course_info.slice(
         :course_uuid,
         :sequence_number,
         :ecosystem_uuid,

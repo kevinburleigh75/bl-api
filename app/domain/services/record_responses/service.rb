@@ -6,12 +6,12 @@ class Services::RecordResponses::Service
 
     course_events = responses.map{ |response|
       CourseEvent.new(
-        event_uuid:         response.fetch(:response_uuid),
-        event_type:         CourseEvent.event_type.record_response,
-        course_uuid:        response.fetch(:course_uuid),
-        course_seqnum:      response.fetch(:sequence_number),
-        has_been_processed: false,
-        data: response.slice(
+        event_uuid:             response.fetch(:response_uuid),
+        event_type:             CourseEvent.event_type.record_response,
+        course_uuid:            response.fetch(:course_uuid),
+        course_seqnum:          response.fetch(:sequence_number),
+        event_has_been_bundled: false,
+        event_data: response.slice(
           :response_uuid,
           :course_uuid,
           :sequence_number,

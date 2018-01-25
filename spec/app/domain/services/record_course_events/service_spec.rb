@@ -32,10 +32,10 @@ RSpec.describe Services::RecordCourseEvents::Service do
 
     let!(:existing_course_event_indicators) {
       [
-        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[2], needs_attention: true,  last_course_seqnum: 2, waiting_since: Time.current),
-        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[3], needs_attention: true,  last_course_seqnum: 2, waiting_since: Time.current),
-        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[4], needs_attention: false, last_course_seqnum: 2, waiting_since: Time.current),
-        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[5], needs_attention: false, last_course_seqnum: 2, waiting_since: Time.current),
+        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[2], course_needs_attention: true,  course_last_bundled_seqnum: 2, course_waiting_since: Time.current),
+        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[3], course_needs_attention: true,  course_last_bundled_seqnum: 2, course_waiting_since: Time.current),
+        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[4], course_needs_attention: false, course_last_bundled_seqnum: 2, course_waiting_since: Time.current),
+        FactoryBot.create(:course_event_indicator, course_uuid: course_uuids[5], course_needs_attention: false, course_last_bundled_seqnum: 2, course_waiting_since: Time.current),
       ]
     }
 
@@ -128,10 +128,10 @@ RSpec.describe Services::RecordCourseEvents::Service do
 
       target_course_uuids = course_uuids.values_at(0)
       new_indicators = CourseEventIndicator.where(course_uuid: target_course_uuids)
-      expect(new_indicators).to all(have_attributes(needs_attention:    true))
-      expect(new_indicators).to all(have_attributes(last_course_seqnum: -1))
+      expect(new_indicators).to all(have_attributes(course_needs_attention:     true))
+      expect(new_indicators).to all(have_attributes(course_last_bundled_seqnum: -1))
       new_indicators.each do |indicator|
-        expect(indicator.waiting_since).to be > action_time
+        expect(indicator.course_waiting_since).to be > action_time
       end
     end
 
@@ -142,8 +142,8 @@ RSpec.describe Services::RecordCourseEvents::Service do
 
       target_course_uuids = course_uuids.values_at(1)
       new_indicators = CourseEventIndicator.where(course_uuid: target_course_uuids)
-      expect(new_indicators).to all(have_attributes(needs_attention:    false))
-      expect(new_indicators).to all(have_attributes(last_course_seqnum: -1))
+      expect(new_indicators).to all(have_attributes(course_needs_attention:     false))
+      expect(new_indicators).to all(have_attributes(course_last_bundled_seqnum: -1))
     end
 
     it "CourseEventIndicators for courses that did not need attention and received in-sequence events are updated" do
@@ -155,9 +155,9 @@ RSpec.describe Services::RecordCourseEvents::Service do
       updated_indicators  = CourseEventIndicator.where("updated_at > ?", action_time)
                                                 .where(course_uuid: target_course_uuids)
       expect(updated_indicators.count).to eq(target_course_uuids.count)
-      expect(updated_indicators).to all(have_attributes(needs_attention: true))
+      expect(updated_indicators).to all(have_attributes(course_needs_attention: true))
       updated_indicators.each do |indicator|
-        expect(indicator.waiting_since).to be > action_time
+        expect(indicator.course_waiting_since).to be > action_time
       end
     end
 

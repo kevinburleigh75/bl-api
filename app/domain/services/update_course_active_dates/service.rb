@@ -5,12 +5,12 @@ class Services::UpdateCourseActiveDates::Service
     ##
 
     course_event = CourseEvent.new(
-      event_uuid:         course_info.fetch(:request_uuid),
-      event_type:         CourseEvent.event_type.update_course_active_dates,
-      course_uuid:        course_info.fetch(:course_uuid),
-      course_seqnum:      course_info.fetch(:sequence_number),
-      has_been_processed: false,
-      data: course_info.slice(
+      event_uuid:             course_info.fetch(:request_uuid),
+      event_type:             CourseEvent.event_type.update_course_active_dates,
+      course_uuid:            course_info.fetch(:course_uuid),
+      course_seqnum:          course_info.fetch(:sequence_number),
+      event_has_been_bundled: false,
+      event_data: course_info.slice(
         :request_uuid,
         :course_uuid,
         :sequence_number,

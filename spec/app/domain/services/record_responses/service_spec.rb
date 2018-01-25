@@ -8,12 +8,12 @@ RSpec.describe Services::RecordResponses::Service do
   let(:given_course_events) {
     given_response_data.map{ |response_data|
       CourseEvent.new(
-        event_uuid:         response_data.fetch(:response_uuid),
-        event_type:         CourseEvent.event_type.record_response,
-        course_uuid:        response_data.fetch(:course_uuid),
-        course_seqnum:      response_data.fetch(:sequence_number),
-        has_been_processed: false,
-        data: response_data.slice(
+        event_uuid:             response_data.fetch(:response_uuid),
+        event_type:             CourseEvent.event_type.record_response,
+        course_uuid:            response_data.fetch(:course_uuid),
+        course_seqnum:          response_data.fetch(:sequence_number),
+        event_has_been_bundled: false,
+        event_data: response_data.slice(
           :response_uuid,
           :course_uuid,
           :sequence_number,

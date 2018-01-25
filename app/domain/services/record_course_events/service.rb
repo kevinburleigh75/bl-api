@@ -25,10 +25,10 @@ class Services::RecordCourseEvents::Service
 
     course_event_indicators = course_uuids.map{ |course_uuid|
       CourseEventIndicator.new(
-        course_uuid:        course_uuid,
-        last_course_seqnum: -1,
-        needs_attention:    false,
-        waiting_since:      Time.current,
+        course_uuid:                course_uuid,
+        course_last_bundled_seqnum: -1,
+        course_needs_attention:     false,
+        course_waiting_since:       Time.current,
       )
     }
 
@@ -71,11 +71,11 @@ class Services::RecordCourseEvents::Service
       ##
 
       indicators_to_update = course_event_indicators.select{ |indicator|
-        !indicator.needs_attention &&
-        seqnums_by_course_uuid[indicator.course_uuid].has_key?(1 + indicator.last_course_seqnum)
+        !indicator.course_needs_attention &&
+        seqnums_by_course_uuid[indicator.course_uuid].has_key?(1 + indicator.course_last_bundled_seqnum)
       }.each{ |indicator|
-        indicator.needs_attention = true
-        indicator.waiting_since   = Time.now
+        indicator.course_needs_attention = true
+        indicator.course_waiting_since   = Time.now
       }
 
       CourseEventIndicator.import(
