@@ -19,36 +19,28 @@ class Services::CreateEcosystem::Service
     )
 
     ##
+    ## Create a block that creates BookContainers for each book
+    ## chapter and page.
+    ##
+
+    block = lambda {
+        book_containers = ecosystem_info.fetch(:book).fetch(:contents).map{ |page_module|
+            BookContainer.new(
+                ecosystem_uuid: ecosystem_info.fetch(:ecosystem_uuid),
+                container_uuid: page_module.fetch(:container_uuid),
+            )
+        }
+
+        BookContainer.import book_containers, on_duplicate_key_ignore: true
+    }
+
+    ##
     ## Delegate to the CourseEvent recording service, which handles
     ## the details of transaction isolation, locks, etc.
     ##
 
-    created_ecosystem_uuids = Services::RecordEcosystemEvents::Service.new.process(ecosystem_events: [ecosystem_event])
+    created_ecosystem_uuids = Services::RecordEcosystemEvents::Service.new.process(ecosystem_events: [ecosystem_event], &block)
 
     return {created_ecosystem_uuid: created_ecosystem_uuids.first}
-
-    # book_container_attributes = book.fetch(:contents).map do |content|
-    #   { uuid: content.fetch(:container_uuid), ecosystem_uuid: ecosystem_uuid }
-    # end
-
-    # EcosystemEvent.transaction do
-    #   BookContainer.append book_container_attributes
-
-    #   EcosystemEvent.append(
-    #     uuid: ecosystem_uuid,
-    #     type: :create_ecosystem,
-    #     ecosystem_uuid: ecosystem_uuid,
-    #     sequence_number: 0,
-    #     data: {
-    #       ecosystem_uuid: ecosystem_uuid,
-    #       sequence_number: 0,
-    #       book: book,
-    #       exercises: exercises,
-    #       imported_at: imported_at
-    #     }
-    #   )
-    # end
-
-    # { created_ecosystem_uuid: ecosystem_uuid }
   end
 end

@@ -91,7 +91,7 @@ RSpec.describe Services::CreateEcosystem::Service do
 
   let(:service_double) {
     object_double(Services::RecordEcosystemEvents::Service.new).tap do |dbl|
-      allow(dbl).to receive(:process).and_return(process_result)
+      allow(dbl).to receive(:process).and_return(process_result).and_yield
     end
   }
 
@@ -106,5 +106,20 @@ RSpec.describe Services::CreateEcosystem::Service do
 
   it "the uuid returned from the RecordEcosystemEvents service is properly returned" do
     expect(action.fetch(:created_ecosystem_uuid)).to eq(given_ecosystem_info.fetch(:ecosystem_uuid))
+  end
+
+  it "creates BookContainers for each book chapter and page" do
+    action_time = Time.current
+
+    action
+
+    target_container_uuids = given_ecosystem_info.fetch(:book)
+                                                 .fetch(:contents)
+                                                 .map{|page_module| page_module[:container_uuid]}
+    new_book_containers = BookContainer.where(container_uuid: target_container_uuids)
+                                       .where("created_at > ?", action_time)
+
+    expect(new_book_containers.map(&:container_uuid)).to match_array(target_container_uuids)
+    expect(new_book_containers.map(&:ecosystem_uuid).uniq).to eq(Array(given_ecosystem_info.fetch(:ecosystem_uuid)))
   end
 end
