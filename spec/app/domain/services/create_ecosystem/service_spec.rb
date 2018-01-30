@@ -91,7 +91,7 @@ RSpec.describe Services::CreateEcosystem::Service do
 
   let(:service_double) {
     object_double(Services::RecordEcosystemEvents::Service.new).tap do |dbl|
-      allow(dbl).to receive(:process).and_return(process_result).and_yield
+      allow(dbl).to receive(:process).and_return(process_result)
     end
   }
 
