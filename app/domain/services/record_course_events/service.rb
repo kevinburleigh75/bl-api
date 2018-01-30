@@ -18,25 +18,6 @@ class Services::RecordCourseEvents::Service
     }
 
     ##
-    ## Create CourseEventIndicators for any previously-unseen course_uuids.
-    ## This is done in a separate transaction to avoid potential race
-    ## conditions with other processes.
-    ##
-
-    course_event_indicators = course_uuids.map{ |course_uuid|
-      CourseEventIndicator.new(
-        course_uuid:                course_uuid,
-        course_last_bundled_seqnum: -1,
-        course_needs_attention:     false,
-        course_waiting_since:       Time.current,
-      )
-    }
-
-    CourseEventIndicator.transaction(isolation: :read_committed) do
-      CourseEventIndicator.import course_event_indicators, on_duplicate_key_ignore: true
-    end
-
-    ##
     ## Record the CourseEvents and update the associated
     ## CourseEventIndicators (as appropriate).
     ##
@@ -47,7 +28,7 @@ class Services::RecordCourseEvents::Service
       ## already be present (idempotency).
       ##
 
-      CourseEvent.import course_events, on_duplicate_key_ignore: true;
+      CourseEvent.import course_events, on_duplicate_key_ignore: true
 
       ##
       ## Find and lock the associated course states.
@@ -61,6 +42,26 @@ class Services::RecordCourseEvents::Service
       }.gsub(/\n\s*/, ' ')
 
       course_event_indicators = CourseEventIndicator.find_by_sql(sql_find_and_lock_course_event_indicators)
+
+      ##
+      ## If there are previously-unseen courses, create indicators for them.
+      ##
+
+      indicator_course_uuids = course_event_indicators.map(&:course_uuid).sort
+
+      if indicator_course_uuids != course_uuids
+        new_course_event_indicators = (course_uuids - indicator_course_uuids).map{ |course_uuid|
+          CourseEventIndicator.new(
+            course_uuid:                course_uuid,
+            course_last_bundled_seqnum: -1,
+            course_needs_attention:     false,
+            course_waiting_since:       Time.current,
+          )
+        }
+
+        CourseEventIndicator.import new_course_event_indicators, on_duplicate_key_ignore: true
+        course_event_indicators.concat(new_course_event_indicators)
+      end
 
       ##
       ## Update and save the course event indicators.
