@@ -29,6 +29,11 @@ class Services::CreateEcosystem::Service
         )
     }
 
+    ##
+    ## Bulk import the BookContainers, and delegate to the EcosystemEvent
+    ## recording utility.
+    ##
+
     created_ecosystem_uuids = BookContainer.transaction(isolation: :read_committed) do
         BookContainer.import book_containers, on_duplicate_key_ignore: true
 
