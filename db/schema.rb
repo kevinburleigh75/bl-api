@@ -60,6 +60,7 @@ ActiveRecord::Schema.define(version: 20180125203549) do
     t.uuid "event_uuid", null: false
     t.string "event_type", null: false
     t.jsonb "event_data", null: false
+    t.boolean "event_has_been_bundled", null: false
     t.uuid "ecosystem_uuid", null: false
     t.integer "ecosystem_seqnum", null: false
     t.datetime "created_at", null: false

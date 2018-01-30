@@ -120,14 +120,21 @@ RSpec::Matchers.define :the_same_records_as do |expected|
       actual_records   = actual[key]
 
       ## same type of values
-      break false if expected_records.is_a?(Array) != actual_records.is_a?(Array)
+      break false if expected_records.kind_of?(Array) != actual_records.kind_of?(Array)
+
+      expected_records_arr = Array(expected_records)
+      actual_records_arr   = Array(actual_records)
 
       ## same number of values
-      break false if Array(expected_records).count != Array(actual_records).count
+      break false if expected_records_arr.count != actual_records_arr.count
+
+      ## everybody is an ActiveRecord
+      break false unless expected_records_arr.all?{|record| record.kind_of?(ActiveRecord::Base)}
+      break false unless actual_records_arr.all?{|record| record.kind_of?(ActiveRecord::Base)}
 
       ## same values (order doesn't matter)
-      result = Array(expected_records).each do |expected_record|
-        break false unless Array(actual_records).detect{|actual_record| actual_record.attributes == expected_record.attributes}
+      result = expected_records_arr.each do |expected_record|
+        break false unless actual_records_arr.detect{|actual_record| actual_record.attributes == expected_record.attributes}
         true
       end
       break result unless result
