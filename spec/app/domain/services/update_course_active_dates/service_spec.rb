@@ -38,13 +38,13 @@ RSpec.describe Services::UpdateCourseActiveDates::Service do
   let(:process_result)  { [given_course_event.event_uuid] }
 
   let(:service_double) {
-    object_double(Services::RecordCourseEvents::Service.new).tap do |dbl|
+    object_double(Utils::RecordCourseEvents::Util.new).tap do |dbl|
       allow(dbl).to receive(:process).and_return(process_result)
     end
   }
 
   before(:each) do
-    allow(Services::RecordCourseEvents::Service).to receive(:new).and_return(service_double)
+    allow(Utils::RecordCourseEvents::Util).to receive(:new).and_return(service_double)
   end
 
   it "the RecordCourseEvents service is called with the correct CourseEvents" do

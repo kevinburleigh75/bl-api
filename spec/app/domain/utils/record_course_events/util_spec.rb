@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Services::RecordCourseEvents::Service do
+RSpec.describe Utils::RecordCourseEvents::Util do
   let(:service) { described_class.new }
 
   let(:action)  { service.process(course_events: given_course_events) }

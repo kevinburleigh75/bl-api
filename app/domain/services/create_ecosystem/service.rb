@@ -32,8 +32,7 @@ class Services::CreateEcosystem::Service
     created_ecosystem_uuids = BookContainer.transaction(isolation: :read_committed) do
         BookContainer.import book_containers, on_duplicate_key_ignore: true
 
-        created_ecosystem_uuids = Services::RecordEcosystemEvents::Service.new.process(ecosystem_events: [ecosystem_event])
-        created_ecosystem_uuids
+        Utils::RecordEcosystemEvents::Util.new.process(ecosystem_events: [ecosystem_event])
     end
 
     return {created_ecosystem_uuid: created_ecosystem_uuids.first}

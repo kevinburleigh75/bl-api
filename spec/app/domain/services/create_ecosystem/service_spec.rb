@@ -90,13 +90,13 @@ RSpec.describe Services::CreateEcosystem::Service do
   let(:process_result)  { [given_ecosystem_event.event_uuid] }
 
   let(:service_double) {
-    object_double(Services::RecordEcosystemEvents::Service.new).tap do |dbl|
+    object_double(Utils::RecordEcosystemEvents::Util.new).tap do |dbl|
       allow(dbl).to receive(:process).and_return(process_result)
     end
   }
 
   before(:each) do
-    allow(Services::RecordEcosystemEvents::Service).to receive(:new).and_return(service_double)
+    allow(Utils::RecordEcosystemEvents::Util).to receive(:new).and_return(service_double)
   end
 
   it "the RecordEcosystemEvents service is called with the correct EcosystemEvent" do

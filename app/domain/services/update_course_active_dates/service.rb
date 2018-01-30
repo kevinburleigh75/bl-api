@@ -21,11 +21,12 @@ class Services::UpdateCourseActiveDates::Service
     )
 
     ##
-    ## Delegate to the CourseEvent recording service, which handles
-    ## the details of transaction isolation, locks, etc.
+    ## Delegate to the CourseEvent recording utility.
     ##
 
-    recorded_event_uuids = Services::RecordCourseEvents::Service.new.process(course_events: [course_event]);
+    recorded_event_uuids = CourseEvent.transaction(isolation: :read_committed) do
+      Utils::RecordCourseEvents::Util.new.process(course_events: [course_event])
+    end
 
     return {updated_course_uuid: recorded_event_uuids.first}
   end
