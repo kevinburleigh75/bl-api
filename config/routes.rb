@@ -5,6 +5,7 @@ Rails.application.routes.draw do
   post '/create_ecosystem'           => 'external/ecosystems#create'
   post '/create_update_assignments'  => 'external/assignments#create_update'
   post '/update_course_active_dates' => 'external/courses#update_active_dates'
+  post '/update_rosters'             => 'external/rosters#update'
   post '/fetch_student_clues'        => 'external/clues#fetch_student'
   post '/fetch_teacher_clues'        => 'external/clues#fetch_teacher'
 end
