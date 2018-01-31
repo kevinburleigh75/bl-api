@@ -108,7 +108,7 @@ RSpec.describe Services::CreateUpdateAssignments::Service do
       expect(service_double).to have_received(:process).with(the_same_records_as(process_payload))
     end
 
-    it "the updated assignment hash array is returned" do
+    it "the array of updated assignment hashes is returned" do
       expect(action).to eq(target_result)
     end
   end
