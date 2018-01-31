@@ -56,7 +56,7 @@ RSpec.describe Services::UpdateRosters::Service do
       expect(utility_double).to have_received(:process).with(the_same_records_as(process_payload))
     end
 
-    it "the returned uuid array is empty" do
+    it "the returned result array is empty" do
       expect(action).to match_array(target_response)
     end
   end
@@ -92,7 +92,7 @@ RSpec.describe Services::UpdateRosters::Service do
       expect(utility_double).to have_received(:process).with(the_same_records_as(process_payload))
     end
 
-    it "the uuids returned from the RecordCourseEvents utility are properly returned" do
+    it "the correct result array is returned" do
       expect(action).to match_array(target_response)
     end
   end
