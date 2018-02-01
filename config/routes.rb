@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   post '/create_ecosystem'           => 'external/ecosystems#create'
 
   post '/update_course_exercise_exclusions' => 'external/exercise_exclusions#update_course'
+  post '/update_global_exercise_exclusions' => 'external/exercise_exclusions#update_global'
 
   post '/create_update_assignments'  => 'external/assignments#create_update'
 
