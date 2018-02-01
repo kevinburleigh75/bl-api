@@ -7,6 +7,14 @@ class External::CourseEcosystemsController < JsonApiController
     end
   end
 
+  def update
+    respond_with_json_apis_and_service(
+      input_schema:  _update_request_payload_schema,
+      output_schema: _update_response_payload_schema,
+      service:       Services::UpdateCourseEcosystem::Service.new,
+    )
+  end
+
   protected
 
   def _prepare_request_payload_schema
@@ -93,6 +101,83 @@ class External::CourseEcosystemsController < JsonApiController
       },
       'required': ['status'],
       'additionalProperties': false
+    }
+  end
+
+  def _update_request_payload_schema
+    {
+      '$schema': JSON_SCHEMA,
+
+      'type': 'object',
+      'properties': {
+        'update_requests': {
+          'type': 'array',
+          'items': {'$ref': '#definitions/update_request'},
+          'minItems': 0,
+          'maxItems': 1000,
+        }
+      },
+      'required': ['update_requests'],
+      'additionalProperties': false,
+      'standard_definitions': _standard_definitions,
+      'definitions': {
+        'update_request': {
+          'type': 'object',
+          'properties': {
+            'request_uuid':     {'$ref': '#standard_definitions/uuid'},
+            'course_uuid':      {'$ref': '#standard_definitions/uuid'},
+            'sequence_number':  {'$ref': '#standard_definitions/non_negative_integer'},
+            'preparation_uuid': {'$ref': '#standard_definitions/uuid'},
+            'updated_at':       {'$ref': '#/standard_definitions/datetime'}
+          },
+          'required': [
+            'request_uuid',
+            'course_uuid',
+            'sequence_number',
+            'preparation_uuid',
+            'updated_at'
+          ],
+          'additionalProperties': false
+        }
+      }
+    }
+  end
+
+  def _update_response_payload_schema
+    {
+      '$schema': JSON_SCHEMA,
+
+      'type': 'object',
+      'properties': {
+        'update_responses': {
+          'type': 'array',
+          'items': {'$ref': '#definitions/update_response'},
+          'minItems': 0,
+          'maxItems': 1000,
+        }
+      },
+      'required': ['update_responses'],
+      'additionProperties': false,
+      'standard_definitions': _standard_definitions,
+      'definitions': {
+        'update_response': {
+          'type': 'object',
+          'properties': {
+            'request_uuid': {'$ref': '#standard_definitions/uuid'},
+            'update_status': {
+              'type': 'string',
+              'enum': [
+                'preparation_unknown',
+                'preparation_obsolete',
+                'updated_but_unready',
+                'updated_and_ready'
+              ]
+            }
+          },
+          'required': ['request_uuid', 'update_status'],
+          'additionalProperties': false
+        }
+      }
     }
   end
 
