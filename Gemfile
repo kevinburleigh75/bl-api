@@ -7,7 +7,7 @@ end
 
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.1.4'
+gem 'rails', '~> 5.2.0'
 # Use postgres database
 ## Limit version to less than 1.0: https://stackoverflow.com/a/44034083
 gem 'pg', '~> 0.20'
